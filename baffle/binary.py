@@ -91,7 +91,7 @@ class BinaryClassificationReport():
         # type checking
         if not isinstance(self.predictions, pd.DataFrame) and not isinstance(self.predictions, np.ndarray):
             raise TypeError('predictions must be a pandas dataframe or a numpy array')
-        if not isinstance(self.labels, pd.DataFrame):
+        if not isinstance(self.labels, pd.DataFrame)  and not isinstance(self.labels, np.ndarray):
             raise TypeError('labels must be a pandas dataframe or a numpy array')
 
         self.confusion_statistics = self.generate_report(self.labels, self.predictions)
