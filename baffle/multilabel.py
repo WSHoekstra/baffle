@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-
+# import numpy as np
 
 class MultiLabelClassificationReport():
     '''
@@ -43,7 +43,7 @@ class MultiLabelClassificationReport():
                        label)
                        )
 
-    def generate_classification_metrics(self):
+    def generate_classification_metrics(self, cutoff=0.5):
         '''
         Generates some row level classification metrics to summarize later.
         Assumes to be passed a dataframe of predictions, and a dataframe of labels.
@@ -60,8 +60,7 @@ class MultiLabelClassificationReport():
         labels_vs_predictions['absolute_error'] = abs(
             labels_vs_predictions['label'] -
             labels_vs_predictions['probability'])
-        labels_vs_predictions['label_pred'] = labels_vs_predictions['probability'].round(
-        ).astype(int)
+        labels_vs_predictions['label_pred'] = [1 if i>cutoff else 0 for i in labels_vs_predictions['probability']]
         labels_vs_predictions['classification_outcome_type'] = labels_vs_predictions[[
             'label_pred', 'label']].apply(self.determine_classification_outcome_type, axis=1)
         labels_vs_predictions['classification_correct'] = (
@@ -187,9 +186,10 @@ class MultiLabelClassificationReport():
         labels = labels[['observation', 'class', 'label']]
         return labels
 
-    def __init__(self, predictions, labels, testmode=False):
+    def __init__(self, predictions, labels, cutoff=0.5, testmode=False):
         self.predictions = predictions
         self.labels = labels
+        self.cutoff = cutoff
         self.__testmode = testmode
 
         # override inputs in test mode
@@ -203,8 +203,14 @@ class MultiLabelClassificationReport():
         if not isinstance(self.labels, pd.DataFrame):
             raise TypeError('labels must be a pandas dataframe')
 
-        self.rowlevel_confusion_statistics = self.generate_classification_metrics()
+        self.rowlevel_confusion_statistics = self.generate_classification_metrics(cutoff)
         self.overall_confusion_statistics = self.generate_confusion_statistics()
         self.class_confusion_statistics = self.generate_class_confusion_statistics()
+
+
+# tests = []
+# for cutoff in np.arange(0.0,1.0,0.1):
+#     test = MultiLabelClassificationReport(None, None, cutoff, testmode=True)
+#     tests.append(test)
 
 # test = MultiLabelClassificationReport(None, None, testmode=True)
